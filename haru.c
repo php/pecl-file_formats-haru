@@ -1196,7 +1196,6 @@ static PHP_METHOD(HaruDoc, setInfoDateAttr)
 }
 /* }}} */
 
-
 /* {{{ proto object HaruDoc::getFont(string fontname[, string encoding ])
  Create and return HaruFont instance */
 static PHP_METHOD(HaruDoc, getFont)
@@ -1945,7 +1944,7 @@ static PHP_METHOD(HaruPage, setLineJoin)
 /* }}} */
 
 /* {{{ proto bool HaruPage::setMiterLimit(double limit)
- */
+ Set the current value of the miter limit of the page */
 static PHP_METHOD(HaruPage, setMiterLimit)
 {
 	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
@@ -2371,6 +2370,74 @@ static PHP_METHOD(HaruPage, Concat)
 		return;
 	}
 	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto array HaruPage::getTransMatrix()
+ Get the current transformation matrix of the page */
+static PHP_METHOD(HaruPage, getTransMatrix)
+{
+	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_TransMatrix matrix;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	matrix = HPDF_Page_GetTransMatrix(page->h);
+
+	array_init(return_value);
+	add_assoc_long_ex(return_value, "a", sizeof("a"), matrix.a);
+	add_assoc_long_ex(return_value, "b", sizeof("b"), matrix.b);
+	add_assoc_long_ex(return_value, "c", sizeof("c"), matrix.c);
+	add_assoc_long_ex(return_value, "d", sizeof("d"), matrix.d);
+	add_assoc_long_ex(return_value, "x", sizeof("x"), matrix.x);
+	add_assoc_long_ex(return_value, "y", sizeof("y"), matrix.y);
+}
+/* }}} */
+
+/* {{{ proto bool HaruPage::setTextMatrix(double a, double b, double c, double d, double x, double y)
+ Set the current text transformation matrix of the page */
+static PHP_METHOD(HaruPage, setTextMatrix)
+{
+	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	double a, b, c, d, x, y;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "dddddd", &a, &b, &c, &d, &x, &y) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Page_SetTextMatrix(page->h, (HPDF_REAL)a, (HPDF_REAL)b, (HPDF_REAL)c, (HPDF_REAL)d, (HPDF_REAL)x, (HPDF_REAL)y);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		/* knock-knock, follow the white rabbit */
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto array HaruPage::getTextMatrix()
+ Get the current text transformation matrix of the page */
+static PHP_METHOD(HaruPage, getTextMatrix)
+{
+	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_TransMatrix matrix;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	matrix = HPDF_Page_GetTextMatrix(page->h);
+
+	array_init(return_value);
+	add_assoc_long_ex(return_value, "a", sizeof("a"), matrix.a);
+	add_assoc_long_ex(return_value, "b", sizeof("b"), matrix.b);
+	add_assoc_long_ex(return_value, "c", sizeof("c"), matrix.c);
+	add_assoc_long_ex(return_value, "d", sizeof("d"), matrix.d);
+	add_assoc_long_ex(return_value, "x", sizeof("x"), matrix.x);
+	add_assoc_long_ex(return_value, "y", sizeof("y"), matrix.y);
 }
 /* }}} */
 
@@ -4443,6 +4510,176 @@ static PHP_METHOD(HaruAnnotation, setOpened)
 
 /* }}} */
 
+/* HaruDestination methods {{{ */
+
+/* {{{ proto bool HaruDestination::setXYZ(double left, double top, double zoom)
+ Set the appearance of the page */
+static PHP_METHOD(HaruDestination, setXYZ)
+{
+	php_harudestination *dest = (php_harudestination *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	double left, top, zoom;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ddd", &left, &top, &zoom) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Destination_SetXYZ(dest->h, (HPDF_REAL)left, (HPDF_REAL)top, (HPDF_REAL)zoom);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDestination::setFit()
+ Set the appearance of the page to fit the window */
+static PHP_METHOD(HaruDestination, setFit)
+{
+	php_harudestination *dest = (php_harudestination *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Destination_SetFit(dest->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDestination::setFitH(double top)
+ Set the appearance of the page to fit the window width */
+static PHP_METHOD(HaruDestination, setFitH)
+{
+	php_harudestination *dest = (php_harudestination *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	double top;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &top) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Destination_SetFitH(dest->h, (HPDF_REAL)top);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDestination::setFitV(double left)
+ Set the appearance of the page to fit the window height */
+static PHP_METHOD(HaruDestination, setFitV)
+{
+	php_harudestination *dest = (php_harudestination *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	double left;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &left) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Destination_SetFitV(dest->h, (HPDF_REAL)left);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDestination::setFitR(double left, double bottom, double right, double top) 
+ Set the appearance of the page to fit the specified rectangle */
+static PHP_METHOD(HaruDestination, setFitR)
+{
+	php_harudestination *dest = (php_harudestination *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	double left, bottom, right, top;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "dddd", &left, &bottom, &right, &top) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Destination_SetFitR(dest->h, (HPDF_REAL) left, (HPDF_REAL) bottom, (HPDF_REAL) right, (HPDF_REAL) top);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDestination::setFitB()
+ Set the appearance of the page to fit the bounding box of the page within the window */
+static PHP_METHOD(HaruDestination, setFitB)
+{
+	php_harudestination *dest = (php_harudestination *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Destination_SetFitB(dest->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDestination::setFitBH(double top)
+ Set the appearance of the page to fit the width of the bounding box */
+static PHP_METHOD(HaruDestination, setFitBH)
+{
+	php_harudestination *dest = (php_harudestination *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	double top;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &top) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Destination_SetFitBH(dest->h, (HPDF_REAL)top);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDestination::setFitBV(double left)
+ Set the appearance of the page to fit the height of the boudning box */
+static PHP_METHOD(HaruDestination, setFitBV)
+{
+	php_harudestination *dest = (php_harudestination *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	double left;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &left) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Destination_SetFitBV(dest->h, (HPDF_REAL)left);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* }}} */
+
 /* HaruOutline methods {{{ */
 
 /* {{{ proto bool HaruOutline::setOpened(bool opened)
@@ -4547,6 +4784,9 @@ static zend_function_entry harupage_methods[] = { /* {{{ */
 	PHP_ME(HaruPage, setFlat, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, setDash, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, Concat, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruPage, getTransMatrix, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruPage, setTextMatrix, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruPage, getTextMatrix, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, moveTo, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, stroke, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, fill, NULL, ZEND_ACC_PUBLIC)
@@ -4653,6 +4893,14 @@ static zend_function_entry haruimage_methods[] = { /* {{{ */
 /* }}} */
 
 static zend_function_entry harudestination_methods[] = { /* {{{ */
+	PHP_ME(HaruDestination, setXYZ, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDestination, setFit, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDestination, setFitH, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDestination, setFitV, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDestination, setFitR, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDestination, setFitB, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDestination, setFitBH, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDestination, setFitBV, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
