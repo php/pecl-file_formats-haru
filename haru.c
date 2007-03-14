@@ -474,7 +474,7 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 			*msg = estrdup("An invalid encoding name is specified");
 			break;
 		case HPDF_INVALID_ENCRYPT_KEY_LEN:
-			*msg = estrdup("The lengh of the key of encryption is invalid");
+			*msg = estrdup("The length of the key of encryption is invalid");
 			break;
 		case HPDF_INVALID_FONTDEF_DATA:
 			*msg = estrdup("An invalid font handle was set or the font format is unsupported");
