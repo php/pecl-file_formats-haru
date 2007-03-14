@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+ARG_WITH("haru", "for haru support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("haru", "enable haru support", "no");
+
+if (PHP_HARU != "no") {
+	EXTENSION("haru", "haru.c");
+}
+
