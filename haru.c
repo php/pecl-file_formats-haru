@@ -29,6 +29,8 @@
 #include "php_haru.h"
 #include <hpdf.h>
 
+#define PHP_HARU_BUF_SIZE 32768
+
 /* {{{ structs and static vars */
 static zend_class_entry *ce_haruexception;
 static zend_class_entry *ce_harudoc;
@@ -839,6 +841,64 @@ static PHP_METHOD(HaruDoc, getEncoder)
 }
 /* }}} */
 
+/* {{{ proto object HaruDoc::getCurrentEncoder()
+ Return HaruEncoder currently used in the document */
+static PHP_METHOD(HaruDoc, getCurrentEncoder)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	php_haruencoder *encoder;
+	HPDF_Encoder e;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	e = HPDF_GetCurrentEncoder(doc->h);
+	
+	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
+		return;
+	}
+
+	if (!e) {
+		/* no encoder set */
+		RETURN_FALSE;
+	}
+
+	object_init_ex(return_value, ce_haruencoder);
+	return_value->refcount = 1;
+	return_value->is_ref = 1;
+	
+	encoder = (php_haruencoder *)zend_object_store_get_object(return_value TSRMLS_CC);
+
+	encoder->doc = *getThis();
+	encoder->h = e;
+	
+	zend_objects_store_add_ref(getThis() TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::setCurrentEncoder(string encoding)
+ Set the current encoder for the document */
+static PHP_METHOD(HaruDoc, setCurrentEncoder)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	char *enc;
+	int enc_len;
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &enc, &enc_len) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_SetCurrentEncoder(doc->h, (const char *)enc);
+	
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
 /* {{{ proto bool HaruDoc::save(string file)
  Save the document into the specified file */
 static PHP_METHOD(HaruDoc, save)
@@ -858,6 +918,59 @@ static PHP_METHOD(HaruDoc, save)
 	if (php_haru_status_to_exception(status TSRMLS_CC)) {
 		return;
 	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::output()
+ Write the document data to the output buffer */
+static PHP_METHOD(HaruDoc, output)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	HPDF_UINT32 size, requested_bytes;
+	char *buffer;
+	size_t buffer_size;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_SaveToStream(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+
+	size = HPDF_GetStreamSize(doc->h);
+	
+	if (!size) {
+		RETURN_FALSE;
+	}
+
+	buffer_size = (size > PHP_HARU_BUF_SIZE) ? PHP_HARU_BUF_SIZE : size;
+	buffer = emalloc(buffer_size + 1);
+
+	while (size > 0) {
+		requested_bytes = buffer_size;
+
+		status = HPDF_ReadFromStream(doc->h, (HPDF_BYTE *)buffer, &buffer_size);
+		if (status != HPDF_STREAM_EOF && php_haru_status_to_exception(status TSRMLS_CC)) {
+			efree(buffer);
+			return;
+		}
+
+		if (requested_bytes > 0) {
+			PHPWRITE(buffer, requested_bytes);
+			size -= requested_bytes;
+		}
+
+		if (status == HPDF_STREAM_EOF) {
+			/* reached the end of the stream */
+			break;
+		}
+	}
+	efree(buffer);
 	RETURN_TRUE;
 }
 /* }}} */
@@ -1037,6 +1150,52 @@ static PHP_METHOD(HaruDoc, getInfoAttr)
 	RETURN_STRING((char *)info, 1);
 }
 /* }}} */
+
+/* {{{ proto bool HaruDoc::setInfoDateAttr(int type, int year, int month, int day, int hour, int min, int sec, string ind, int off_hour, int off_min)
+ Set the datetime info attributes of the document */
+static PHP_METHOD(HaruDoc, setInfoDateAttr)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	long type, year, month, day, hour, min, sec, off_hour, off_min;
+	char *ind;
+	int ind_len;
+	HPDF_Date value;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lllllllsll", &type, &year, &month, &day, &hour, &min, &sec, &ind, &ind_len, &off_hour, &off_min) == FAILURE) {
+		return;
+	}
+
+	switch(type) {
+		case HPDF_INFO_CREATION_DATE:
+		case HPDF_INFO_MOD_DATE:
+			/* only these are valid */
+			break;
+		default:
+			zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "Invalid datetime info attribute type value");
+			return;
+	}
+
+	value.year		= (HPDF_INT) year;
+	value.month		= (HPDF_INT) month;
+	value.day		= (HPDF_INT) day;
+	value.hour		= (HPDF_INT) hour;
+	value.minutes	= (HPDF_INT) min;
+	value.seconds	= (HPDF_INT) sec;
+	value.ind		= (ind[0] == 0) ? 32 /* ' ' */ : ind[0]; /* make libharu happy with empty ind */
+	value.off_hour	= (HPDF_INT) off_hour;
+	value.off_minutes = (HPDF_INT) off_min;
+
+	status = HPDF_SetInfoDateAttr(doc->h, (HPDF_InfoType)type, value);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+
+	RETURN_TRUE;
+}
+/* }}} */
+
 
 /* {{{ proto object HaruDoc::getFont(string fontname[, string encoding ])
  Create and return HaruFont instance */
@@ -1380,6 +1539,51 @@ static PHP_METHOD(HaruDoc, setCompressionMode)
 }
 /* }}} */
 
+/* {{{ proto bool HaruDoc::setPagesConfiguration(int page_per_pages)
+ Set the number of pages per set of pages object */
+static PHP_METHOD(HaruDoc, setPagesConfiguration)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	long page_per_pages;
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &page_per_pages) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_SetPagesConfiguration(doc->h, (HPDF_UINT)page_per_pages);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto object HaruDoc::setOpenAction(object destination)
+ Create and return new HaruAnnotation instance */
+static PHP_METHOD(HaruDoc, setOpenAction)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	php_harudestination *dest;
+	zval *destination;
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &destination, ce_harudestination) == FAILURE) {
+		return;
+	}
+
+	dest = (php_harudestination *)zend_object_store_get_object(destination TSRMLS_CC);
+
+	status = HPDF_SetOpenAction(doc->h, dest->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
 /* {{{ proto object HaruDoc::createOutline(string title[, object parent_outline[, object encoder ] ])
  Create a HaruOutline instance */
 static PHP_METHOD(HaruDoc, createOutline)
@@ -1423,6 +1627,206 @@ static PHP_METHOD(HaruDoc, createOutline)
 	o->h = outline;
 	
 	zend_objects_store_add_ref(getThis() TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::addPageLabel(int first_page, int style, int first_num[, string prefix ])
+ Set the numbering style for the specified range of the pages */
+static PHP_METHOD(HaruDoc, addPageLabel)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	long first_page, style, first_num;
+	char *prefix = NULL;
+	int prefix_len = 0;
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll|s", &first_page, &style, &first_num, &prefix, &prefix_len) == FAILURE) {
+		return;
+	}
+
+	switch (style) {
+		case HPDF_PAGE_NUM_STYLE_DECIMAL:
+		case HPDF_PAGE_NUM_STYLE_UPPER_ROMAN:
+		case HPDF_PAGE_NUM_STYLE_LOWER_ROMAN:
+		case HPDF_PAGE_NUM_STYLE_UPPER_LETTERS:
+		case HPDF_PAGE_NUM_STYLE_LOWER_LETTERS:
+				/* only these are valid */
+			break;
+		default:
+			zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "Invalid numbering mode");
+			return;
+	}
+
+	if (!prefix_len) {
+		prefix = NULL;
+	}
+
+	status = HPDF_AddPageLabel(doc->h, (HPDF_UINT)first_page, (HPDF_PageNumStyle)style, (HPDF_UINT)first_num, (const char *)prefix);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::useJPFonts()
+ Enable builtin Japanese fonts */
+static PHP_METHOD(HaruDoc, useJPFonts)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseJPFonts(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::useJPEncodings()
+ Enable Japanese encodings */
+static PHP_METHOD(HaruDoc, useJPEncodings)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseJPEncodings(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::useKRFonts()
+ Enable builtin Korean fonts */
+static PHP_METHOD(HaruDoc, useKRFonts)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseKRFonts(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::useKREncodings()
+ Enable Korean encodings */
+static PHP_METHOD(HaruDoc, useKREncodings)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseKREncodings(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::useCNSFonts()
+ Enable builtin Chinese simplified fonts */
+static PHP_METHOD(HaruDoc, useCNSFonts)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseCNSFonts(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::useCNSEncodings()
+ Enable Chinese simplified encodings */
+static PHP_METHOD(HaruDoc, useCNSEncodings)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseCNSEncodings(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::useCNTFonts()
+ Enable builtin Chinese traditional fonts */
+static PHP_METHOD(HaruDoc, useCNTFonts)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseCNTFonts(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::useCNTEncodings()
+ Enable Chinese traditional encodings */
+static PHP_METHOD(HaruDoc, useCNTEncodings)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseCNTEncodings(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -4093,15 +4497,19 @@ static PHP_METHOD(HaruOutline, setDestination)
 static zend_function_entry harudoc_methods[] = { /* {{{ */
 	PHP_ME(HaruDoc, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, save, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, output, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, addPage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, insertPage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, getCurrentPage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, getEncoder, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, getCurrentEncoder, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, setCurrentEncoder, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, setPageLayout, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, getPageLayout, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, setPageMode, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, getPageMode, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, setInfoAttr, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, setInfoDateAttr, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, getInfoAttr, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, getFont, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, loadTTF, NULL, ZEND_ACC_PUBLIC)
@@ -4114,7 +4522,18 @@ static zend_function_entry harudoc_methods[] = { /* {{{ */
 	PHP_ME(HaruDoc, setPermission, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, setEncryptionMode, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, setCompressionMode, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, setPagesConfiguration, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, setOpenAction, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, createOutline, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, addPageLabel, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useJPFonts, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useJPEncodings, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useKRFonts, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useKREncodings, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useCNSFonts, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useCNSEncodings, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useCNTFonts, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useCNTEncodings, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -4299,16 +4718,15 @@ zend_module_entry haru_module_entry = {
 ZEND_GET_MODULE(haru)
 #endif
 
-#define HARU_CLASS_CONST(ce, name, value) \
+#define HARU_CLASS_CONST(ce, name, value)												\
 	zend_declare_class_constant_long(ce, name, sizeof(name)-1, (long)value TSRMLS_CC);
 
-#define HARU_INIT_CLASS(uc_class_name, lc_class_name)												\
+#define HARU_INIT_CLASS(uc_class_name, lc_class_name)														\
 	memcpy(&php_##lc_class_name##_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));	\
-	php_##lc_class_name##_handlers.clone_obj = NULL;															\
-	INIT_CLASS_ENTRY(ce, uc_class_name, lc_class_name##_methods);												\
-	ce.create_object = php_##lc_class_name##_new;																\
-	ce_##lc_class_name = zend_register_internal_class(&ce TSRMLS_CC);										\
-
+	php_##lc_class_name##_handlers.clone_obj = NULL;														\
+	INIT_CLASS_ENTRY(ce, uc_class_name, lc_class_name##_methods);											\
+	ce.create_object = php_##lc_class_name##_new;															\
+	ce_##lc_class_name = zend_register_internal_class(&ce TSRMLS_CC);										
 
 /* {{{ PHP_MINIT_FUNCTION
  */
@@ -4428,6 +4846,12 @@ PHP_MINIT_FUNCTION(haru)
 	HARU_CLASS_CONST(ce_harupage, "TS_GLITTER_DOWN", HPDF_TS_GLITTER_DOWN);
 	HARU_CLASS_CONST(ce_harupage, "TS_GLITTER_TOP_LEFT_TO_BOTTOM_RIGHT", HPDF_TS_GLITTER_TOP_LEFT_TO_BOTTOM_RIGHT);
 	HARU_CLASS_CONST(ce_harupage, "TS_REPLACE", HPDF_TS_REPLACE);
+	
+	HARU_CLASS_CONST(ce_harupage, "NUM_STYLE_DECIMAL", HPDF_PAGE_NUM_STYLE_DECIMAL);
+	HARU_CLASS_CONST(ce_harupage, "NUM_STYLE_UPPER_ROMAN", HPDF_PAGE_NUM_STYLE_UPPER_ROMAN);
+	HARU_CLASS_CONST(ce_harupage, "NUM_STYLE_LOWER_ROMAN", HPDF_PAGE_NUM_STYLE_LOWER_ROMAN);
+	HARU_CLASS_CONST(ce_harupage, "NUM_STYLE_UPPER_LETTERS", HPDF_PAGE_NUM_STYLE_UPPER_LETTERS);
+	HARU_CLASS_CONST(ce_harupage, "NUM_STYLE_LOWER_LETTERS", HPDF_PAGE_NUM_STYLE_LOWER_LETTERS);
 
 	HARU_CLASS_CONST(ce_haruencoder, "TYPE_SINGLE_BYTE", HPDF_ENCODER_TYPE_SINGLE_BYTE);
 	HARU_CLASS_CONST(ce_haruencoder, "TYPE_DOUBLE_BYTE", HPDF_ENCODER_TYPE_DOUBLE_BYTE);
