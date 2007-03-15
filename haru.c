@@ -4165,7 +4165,7 @@ static PHP_METHOD(HaruFont, getEncodingName)
 }
 /* }}} */
 
-/* {{{ proto long HaruFont::getUnicodeWidth()
+/* {{{ proto int HaruFont::getUnicodeWidth(int character)
  Get the width of the character in the font */
 static PHP_METHOD(HaruFont, getUnicodeWidth)
 {
@@ -4337,7 +4337,7 @@ static PHP_METHOD(HaruEncoder, getType)
 }
 /* }}} */
 
-/* {{{ proto long HaruEncoder::getByteType(string text, int index)
+/* {{{ proto int HaruEncoder::getByteType(string text, int index)
  Get the type of the byte in the text on the current position */
 static PHP_METHOD(HaruEncoder, getByteType)
 {
@@ -4357,7 +4357,7 @@ static PHP_METHOD(HaruEncoder, getByteType)
 }
 /* }}} */
 
-/* {{{ proto long HaruEncoder::getUnicode(int character)
+/* {{{ proto int HaruEncoder::getUnicode(int character)
  Convert the specified character to unicode */
 static PHP_METHOD(HaruEncoder, getUnicode)
 {
@@ -4375,7 +4375,7 @@ static PHP_METHOD(HaruEncoder, getUnicode)
 }
 /* }}} */
 
-/* {{{ proto long HaruEncoder::getWritingMode()
+/* {{{ proto int HaruEncoder::getWritingMode()
  Get the writing mode of the encoder */
 static PHP_METHOD(HaruEncoder, getWritingMode)
 {
