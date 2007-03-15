@@ -1,13 +1,15 @@
 // $Id$
 // vim:ft=javascript
 
-// If your extension references something external, use ARG_WITH
-// ARG_WITH("haru", "for haru support", "no");
+ARG_WITH("haru", "Haru PDF support", "no");
 
-// Otherwise, use ARG_ENABLE
-// ARG_ENABLE("haru", "enable haru support", "no");
+if (PHP_HARU == "yes") {
+	if (CHECK_LIB("libhpdf.lib", "haru") &&
+			CHECK_LIB("libpng.lib", "haru") &&
+			CHECK_LIB("zlib.lib", "haru") &&
+			CHECK_HEADER_ADD_INCLUDE("hpdf.h", "CFLAGS_HARU", PHP_HARU + ";" + PHP_PHP_BUILD + "\\include\\libharu")) {
 
-if (PHP_HARU != "no") {
-	EXTENSION("haru", "haru.c");
+		EXTENSION("haru", "haru.c");
+	}
 }
 
