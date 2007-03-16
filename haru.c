@@ -1596,8 +1596,48 @@ static PHP_METHOD(HaruDoc, createOutline)
 	char *title;
 	int title_len;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|OO", &title, &title_len, &parent, ce_haruoutline, &encoder, ce_haruencoder) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|zz", &title, &title_len, &parent, &encoder) == FAILURE) {
 		return;
+	}
+
+	if (parent) {
+		switch (Z_TYPE_P(parent)) {
+			case IS_NULL:
+				/* ok */
+				parent = NULL;
+				break;
+			case IS_OBJECT: {
+				zend_class_entry *ce = Z_OBJCE_P(parent);
+				if (ce != ce_haruoutline) {
+					zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "second parameter is expected to be valid HaruOutline instance or NULL, an instance of %s given", ce ? ce->name : "unknown class");
+					return;
+				}
+			}
+				break;
+			default:
+				zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "second parameter is expected to be valid HaruOutline instance or NULL, %s given", zend_zval_type_name(parent));
+				return;
+		}
+	}
+
+	if (encoder) {
+		switch (Z_TYPE_P(encoder)) {
+			case IS_NULL:
+				/* ok */
+				encoder = NULL;
+				break;
+			case IS_OBJECT: {
+				zend_class_entry *ce = Z_OBJCE_P(encoder);
+				if (ce != ce_haruencoder) {
+					zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "third parameter is expected to be valid HaruEncoder instance or NULL, an instance of %s given", ce ? ce->name : "unknown class");
+					return;
+				}
+			}
+				break;
+			default:
+				zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "third parameter is expected to be valid HaruEncoder instance or NULL, %s given", zend_zval_type_name(encoder));
+				return;
+		}
 	}
 
 	if (parent) {
