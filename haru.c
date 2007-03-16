@@ -101,25 +101,42 @@ typedef struct _php_haruoutline {
 
 /* }}} */
 
-/* HARU_CHECK_FILE() macro {{{ */
+/* macros {{{ */
+
 #if PHP_MAJOR_VERSION < 6
 #define HARU_CHECK_FILE(filename)																\
 	do {																						\
+		php_set_error_handling(EH_THROW, ce_haruexception TSRMLS_CC);							\
 		if (PG(safe_mode) && (!php_checkuid(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {	\
-			RETURN_FALSE;																		\
+			php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);									\
+			return;																				\
 		}																						\
 		if (php_check_open_basedir(filename TSRMLS_CC)) {										\
-			RETURN_FALSE;																		\
+			php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);									\
+			return;																				\
 		}																						\
+		php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);										\
 	} while(0)
 #else
 #define HARU_CHECK_FILE(filename)																\
 	do {																						\
+		php_set_error_handling(EH_THROW, ce_haruexception TSRMLS_CC);							\
 		if (php_check_open_basedir(filename TSRMLS_CC)) {										\
-			RETURN_FALSE;																		\
+			php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);									\
+			return;																				\
 		}																						\
+		php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);										\
 	} while(0)
 #endif
+
+#define PHP_HARU_NULL_CHECK(ret, message)										\
+	do {																		\
+		if (!ret) {																\
+			zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, message);	\
+			return;																\
+		}																		\
+	} while(0)
+
 /* }}} */
 
 /* constructors and destructors {{{ */
@@ -708,11 +725,8 @@ static PHP_METHOD(HaruDoc, __construct)
 	}
 
 	doc->h = HPDF_New(NULL, NULL);
-	
-	if (!doc->h) {
-		zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "Cannot create HaruDoc object");
-		return;
-	}
+
+	PHP_HARU_NULL_CHECK(doc->h, "Cannot create HaruDoc handle");
 }
 /* }}} */
 
@@ -729,6 +743,7 @@ static PHP_METHOD(HaruDoc, addPage)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(p, "Cannot create HaruPage handle");
 
 	object_init_ex(return_value, ce_harupage);
 	return_value->refcount = 1;
@@ -763,6 +778,7 @@ static PHP_METHOD(HaruDoc, insertPage)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(p, "Cannot create HaruPage handle");
 
 	object_init_ex(return_value, ce_harupage);
 	return_value->refcount = 1;
@@ -793,6 +809,11 @@ static PHP_METHOD(HaruDoc, getCurrentPage)
 	
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
+	}
+
+	if (!p) {
+		/* no current page is not an error */
+		RETURN_FALSE;
 	}
 
 	object_init_ex(return_value, ce_harupage);
@@ -827,6 +848,7 @@ static PHP_METHOD(HaruDoc, getEncoder)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(e, "Cannot create HaruEncoder handle");
 
 	object_init_ex(return_value, ce_haruencoder);
 	return_value->refcount = 1;
@@ -945,7 +967,8 @@ static PHP_METHOD(HaruDoc, output)
 	size = HPDF_GetStreamSize(doc->h);
 	
 	if (!size) {
-		RETURN_FALSE;
+		zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "Zero stream size, the PDF documents contains no data");
+		return;
 	}
 
 	buffer_size = (size > PHP_HARU_BUF_SIZE) ? PHP_HARU_BUF_SIZE : size;
@@ -1144,7 +1167,7 @@ static PHP_METHOD(HaruDoc, getInfoAttr)
 		return;
 	}
 	
-	if (!info) {
+	if (!info) { /* no error, it's just not set */
 		RETURN_EMPTY_STRING();
 	}
 	RETURN_STRING((char *)info, 1);
@@ -1219,6 +1242,7 @@ static PHP_METHOD(HaruDoc, getFont)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(f, "Cannot create HaruFont handle");
 
 	object_init_ex(return_value, ce_harufont);
 	return_value->refcount = 1;
@@ -1254,6 +1278,7 @@ static PHP_METHOD(HaruDoc, loadTTF)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(name, "Failed to load TTF font");
 
 	RETURN_STRING((char *)name, 1);
 }
@@ -1281,6 +1306,7 @@ static PHP_METHOD(HaruDoc, loadTTC)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(name, "Failed to load TTF font from the font collection");
 
 	RETURN_STRING((char *)name, 1);
 }
@@ -1312,6 +1338,7 @@ static PHP_METHOD(HaruDoc, loadType1)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(name, "Failed to load Type1 font");
 
 	RETURN_STRING((char *)name, 1);
 }
@@ -1344,6 +1371,7 @@ static PHP_METHOD(HaruDoc, loadPNG)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(i, "Failed to load PNG image");
 
 	object_init_ex(return_value, ce_haruimage);
 	return_value->refcount = 1;
@@ -1380,6 +1408,7 @@ static PHP_METHOD(HaruDoc, loadJPEG)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(i, "Failed to load JPEG image");
 
 	object_init_ex(return_value, ce_haruimage);
 	return_value->refcount = 1;
@@ -1428,6 +1457,7 @@ static PHP_METHOD(HaruDoc, loadRaw)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(i, "Failed to load RAW image");
 
 	object_init_ex(return_value, ce_haruimage);
 	return_value->refcount = 1;
@@ -1655,6 +1685,7 @@ static PHP_METHOD(HaruDoc, createOutline)
 	if (php_haru_check_doc_error(doc TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(outline, "Cannot create HaruOutline handle");
 
 	object_init_ex(return_value, ce_haruoutline);
 	return_value->refcount = 1;
@@ -2035,7 +2066,7 @@ static PHP_METHOD(HaruPage, setDash)
 			pat_num = zend_hash_num_elements(Z_ARRVAL_P(pattern));
 			if (pat_num > 8) {
 				zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "first parameter is expected to be array with at most 8 elements, %d given", pat_num);
-				RETURN_FALSE;
+				return;
 			}
 			break;
 		default:
@@ -3199,6 +3230,7 @@ static PHP_METHOD(HaruPage, createDestination)
 	if (php_haru_check_error(page->h->error TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(dest, "Cannot create HaruDestination handle");
 
 	object_init_ex(return_value, ce_harudestination);
 	return_value->refcount = 1;
@@ -3248,6 +3280,7 @@ static PHP_METHOD(HaruPage, createTextAnnotation)
 	if (php_haru_check_error(page->h->error TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(ann, "Cannot create HaruAnnotation handle");
 
 	object_init_ex(return_value, ce_haruannotation);
 	return_value->refcount = 1;
@@ -3291,6 +3324,7 @@ static PHP_METHOD(HaruPage, createLinkAnnotation)
 	if (php_haru_check_error(page->h->error TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(ann, "Cannot create HaruAnnotation handle");
 
 	object_init_ex(return_value, ce_haruannotation);
 	return_value->refcount = 1;
@@ -3333,6 +3367,7 @@ static PHP_METHOD(HaruPage, createURLAnnotation)
 	if (php_haru_check_error(page->h->error TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(ann, "Cannot create HaruAnnotation handle");
 
 	object_init_ex(return_value, ce_haruannotation);
 	return_value->refcount = 1;
@@ -3477,7 +3512,7 @@ static PHP_METHOD(HaruPage, getCurrentFont)
 		return;
 	}
 
-	if (!font) {
+	if (!font) { /* no error */
 		RETURN_FALSE;
 	}
 	
@@ -4128,6 +4163,8 @@ static PHP_METHOD(HaruImage, getColorSpace)
 	if (php_haru_check_error(image->h->error TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(space, "Failed to get the color space of the image");
+
 	RETURN_STRING((char *)space, 1);
 }
 /* }}} */
@@ -4205,6 +4242,8 @@ static PHP_METHOD(HaruFont, getFontName)
 	if (php_haru_check_error(font->h->error TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(name, "Failed to get the name of the font");
+
 	RETURN_STRING((char *)name, 1);
 }
 /* }}} */
@@ -4225,6 +4264,8 @@ static PHP_METHOD(HaruFont, getEncodingName)
 	if (php_haru_check_error(font->h->error TSRMLS_CC)) {
 		return;
 	}
+	PHP_HARU_NULL_CHECK(name, "Failed to get the encoding name of the font");
+
 	RETURN_STRING((char *)name, 1);
 }
 /* }}} */
