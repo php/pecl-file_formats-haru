@@ -405,7 +405,7 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 			*msg = estrdup("The count of elements of a dictionary exceeds HPDF_LIMIT_MAX_DICT_ELEMENT");
 			break;
 		case HPDF_DOC_ENCRYPTDICT_NOT_FOUND:
-			*msg = estrdup("HPDF_SetPermission() OR HPDF_SetEncryptMode() was called before a password is set");
+			*msg = estrdup("Cannot set permissions and encryption mode before a password is set");
 			break;
 		case HPDF_DUPLICATE_REGISTRATION:
 			*msg = estrdup("Tried to register a font that has been registered");
@@ -444,13 +444,13 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 			*msg = estrdup("Bit-per-component of a image which was set as mask-image is invalid");
 			break;
 		case HPDF_INVALID_CHAR_MATRICS_DATA:
-			*msg = estrdup("Cannot recognize char-matrics-data  of an afm file");
+			*msg = estrdup("Cannot recognize char-matrics-data of an afm file");
 			break;
 		case HPDF_INVALID_COLOR_SPACE:
-			*msg = estrdup("The color_space parameter of HPDF_LoadRawImage is invalid, or color-space of a image which was set as mask-image is invalid or the function which is invalid in the present color-space was invoked");
+			*msg = estrdup("The color_space parameter is invalid, or color-space of the image which was set as mask-image is invalid or the function which is invalid in the present color-space was invoked");
 			break;
 		case HPDF_INVALID_COMPRESSION_MODE:
-			*msg = estrdup("Invalid value was set when invoking HPDF_SetCommpressionMode()");
+			*msg = estrdup("Invalid compression mode specified");
 			break;
 		case HPDF_INVALID_DATE_TIME:
 			*msg = estrdup("An invalid date-time value was set");
@@ -493,7 +493,7 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 			*msg = estrdup("An invalid object is set");
 			break;
 		case HPDF_INVALID_OPERATION:
-			*msg = estrdup("Invoked HPDF_Image_SetColorMask() against the image-object which was set a mask-image");
+			*msg = estrdup("Cannot set a mask-image for the image which itself is used as a mask");
 			break;
 		case HPDF_INVALID_OUTLINE:
 			*msg = estrdup("An invalid outline-handle was specified");
