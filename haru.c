@@ -1873,6 +1873,14 @@ static PHP_METHOD(HaruDoc, useCNTEncodings)
 
 /* HaruPage methods {{{ */
 
+/* {{{ proto bool HaruPage::__construct()
+ Dummy constructor */
+static PHP_METHOD(HaruPage, __construct)
+{
+	return;
+}
+/* }}} */
+
 /* {{{ proto bool HaruPage::drawImage(object image, double x, double y, double width, double height)
  Show image at the page */
 static PHP_METHOD(HaruPage, drawImage)
@@ -4010,6 +4018,14 @@ static PHP_METHOD(HaruPage, setSlideShow)
 
 /* HaruImage methods {{{ */
 
+/* {{{ proto bool HaruImage::__construct()
+ Dummy constructor */
+static PHP_METHOD(HaruImage, __construct)
+{
+	return;
+}
+/* }}} */
+
 /* {{{ proto array HaruImage::getSize()
  Get size of the image */
 static PHP_METHOD(HaruImage, getSize)
@@ -4164,6 +4180,14 @@ static PHP_METHOD(HaruImage, setMaskImage)
 /* }}} */
 
 /* HaruFont methods {{{ */
+
+/* {{{ proto bool HaruFont::__construct()
+ Dummy constructor */
+static PHP_METHOD(HaruFont, __construct)
+{
+	return;
+}
+/* }}} */
 
 /* {{{ proto string HaruFont::getFontName()
  Get the name of the font */
@@ -4360,6 +4384,14 @@ static PHP_METHOD(HaruFont, MeasureText)
 
 /* HaruEncoder methods {{{ */
 
+/* {{{ proto bool HaruEncoder::__construct()
+ Dummy constructor */
+static PHP_METHOD(HaruEncoder, __construct)
+{
+	return;
+}
+/* }}} */
+
 /* {{{ proto int HaruEncoder::getType()
  Get the type of the encoder */
 static PHP_METHOD(HaruEncoder, getType)
@@ -4435,6 +4467,14 @@ static PHP_METHOD(HaruEncoder, getWritingMode)
 /* }}}  */
 
 /* HaruAnnotation methods {{{ */
+
+/* {{{ proto bool HaruAnnotation::__construct()
+ Dummy constructor */
+static PHP_METHOD(HaruAnnotation, __construct)
+{
+	return;
+}
+/* }}} */
 
 /* {{{ proto bool HaruAnnotation::setHighlightMode(int mode)
  Set the highlighting mode of the annotation */
@@ -4551,6 +4591,14 @@ static PHP_METHOD(HaruAnnotation, setOpened)
 /* }}} */
 
 /* HaruDestination methods {{{ */
+
+/* {{{ proto bool HaruDestination::__construct()
+ Dummy constructor */
+static PHP_METHOD(HaruDestination, __construct)
+{
+	return;
+}
+/* }}} */
 
 /* {{{ proto bool HaruDestination::setXYZ(double left, double top, double zoom)
  Set the appearance of the page */
@@ -4722,6 +4770,14 @@ static PHP_METHOD(HaruDestination, setFitBV)
 
 /* HaruOutline methods {{{ */
 
+/* {{{ proto bool HaruOutline::__construct()
+ Dummy constructor */
+static PHP_METHOD(HaruOutline, __construct)
+{
+	return;
+}
+/* }}} */
+
 /* {{{ proto bool HaruOutline::setOpened(bool opened)
  Set the initial state of the outline */
 static PHP_METHOD(HaruOutline, setOpened)
@@ -4816,6 +4872,7 @@ static zend_function_entry harudoc_methods[] = { /* {{{ */
 /* }}} */
 
 static zend_function_entry harupage_methods[] = { /* {{{ */
+	PHP_ME(HaruPage, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(HaruPage, drawImage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, setLineWidth, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, setLineCap, NULL, ZEND_ACC_PUBLIC)
@@ -4907,6 +4964,7 @@ static zend_function_entry harupage_methods[] = { /* {{{ */
 /* }}} */
 
 static zend_function_entry harufont_methods[] = { /* {{{ */
+	PHP_ME(HaruFont, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(HaruFont, getFontName, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruFont, getEncodingName, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruFont, getUnicodeWidth, NULL, ZEND_ACC_PUBLIC)
@@ -4921,6 +4979,7 @@ static zend_function_entry harufont_methods[] = { /* {{{ */
 /* }}} */
 
 static zend_function_entry haruimage_methods[] = { /* {{{ */
+	PHP_ME(HaruImage, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(HaruImage, getSize, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruImage, getWidth, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruImage, getHeight, NULL, ZEND_ACC_PUBLIC)
@@ -4933,6 +4992,7 @@ static zend_function_entry haruimage_methods[] = { /* {{{ */
 /* }}} */
 
 static zend_function_entry harudestination_methods[] = { /* {{{ */
+	PHP_ME(HaruDestination, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(HaruDestination, setXYZ, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDestination, setFit, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDestination, setFitH, NULL, ZEND_ACC_PUBLIC)
@@ -4946,6 +5006,7 @@ static zend_function_entry harudestination_methods[] = { /* {{{ */
 /* }}} */
 
 static zend_function_entry haruannotation_methods[] = { /* {{{ */
+	PHP_ME(HaruAnnotation, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(HaruAnnotation, setHighlightMode, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruAnnotation, setBorderStyle, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruAnnotation, setIcon, NULL, ZEND_ACC_PUBLIC)
@@ -4955,6 +5016,7 @@ static zend_function_entry haruannotation_methods[] = { /* {{{ */
 /* }}} */
 
 static zend_function_entry haruencoder_methods[] = { /* {{{ */
+	PHP_ME(HaruEncoder, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(HaruEncoder, getType, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruEncoder, getByteType, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruEncoder, getUnicode, NULL, ZEND_ACC_PUBLIC)
@@ -4964,6 +5026,7 @@ static zend_function_entry haruencoder_methods[] = { /* {{{ */
 /* }}} */
 
 static zend_function_entry haruoutline_methods[] = { /* {{{ */
+	PHP_ME(HaruOutline, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(HaruOutline, setOpened, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruOutline, setDestination, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
