@@ -1590,7 +1590,7 @@ static PHP_METHOD(HaruDoc, setPagesConfiguration)
 /* }}} */
 
 /* {{{ proto object HaruDoc::setOpenAction(object destination)
- Create and return new HaruAnnotation instance */
+ Define which page is shown when the document is opened */
 static PHP_METHOD(HaruDoc, setOpenAction)
 {
 	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
