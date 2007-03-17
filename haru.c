@@ -669,26 +669,26 @@ static HPDF_Rect php_haru_array_to_rect(zval *array) /* {{{ */
 	for (zend_hash_internal_pointer_reset(Z_ARRVAL_P(array));
 			zend_hash_get_current_data(Z_ARRVAL_P(array), (void **) &element) == SUCCESS;
 			zend_hash_move_forward(Z_ARRVAL_P(array))) {
-		if (Z_TYPE_PP(element) != IS_LONG) {
+		if (Z_TYPE_PP(element) != IS_DOUBLE) {
 			tmp = **element;
 			zval_copy_ctor(&tmp);
 			INIT_PZVAL(&tmp);
-			convert_to_long(&tmp);
+			convert_to_double(&tmp);
 			*element = &tmp;
 		}
 
 		switch(i) {
 			case 0:
-				r.left = Z_LVAL_PP(element);
+				r.left = Z_DVAL_PP(element);
 				break;
 			case 1:
-				r.bottom = Z_LVAL_PP(element);
+				r.bottom = Z_DVAL_PP(element);
 				break;
 			case 2:
-				r.right = Z_LVAL_PP(element);
+				r.right = Z_DVAL_PP(element);
 				break;
 			case 3:
-				r.top = Z_LVAL_PP(element);
+				r.top = Z_DVAL_PP(element);
 				break;
 		}
 
@@ -3607,7 +3607,7 @@ static PHP_METHOD(HaruPage, getCurrentFont)
 		return;
 	}
 
-	if (!font) { /* no error */
+	if (!f) { /* no error */
 		RETURN_FALSE;
 	}
 	
