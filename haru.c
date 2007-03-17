@@ -510,7 +510,7 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 			*msg = estrdup("An invalid object is set");
 			break;
 		case HPDF_INVALID_OPERATION:
-			*msg = estrdup("Cannot set a mask-image for the image which itself is used as a mask");
+			*msg = estrdup("Invalid operation, cannot perform the requested action");
 			break;
 		case HPDF_INVALID_OUTLINE:
 			*msg = estrdup("An invalid outline-handle was specified");
@@ -995,6 +995,101 @@ static PHP_METHOD(HaruDoc, output)
 	}
 	efree(buffer);
 	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::saveToStream()
+ Save the document data to a temprorary stream */
+static PHP_METHOD(HaruDoc, saveToStream)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_SaveToStream(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::resetStream()
+ Rewind the temporary stream */
+static PHP_METHOD(HaruDoc, resetStream)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_ResetStream(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::getStreamSize()
+ Get the size of the temporary stream */
+static PHP_METHOD(HaruDoc, getStreamSize)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_UINT32 size;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	size = HPDF_GetStreamSize(doc->h);
+
+	RETURN_LONG((long)size);
+}
+/* }}} */
+
+/* {{{ proto bool HaruDoc::readFromStream(int bytes)
+ Reads data from the temporary stream */
+static PHP_METHOD(HaruDoc, readFromStream)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	long size;
+	HPDF_UINT32 requested_bytes;
+	char *buffer;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &size) == FAILURE) {
+		return;
+	}
+
+	if (size <= 0 || (size + 1) <= 0) {
+		zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "number of bytes must be greater than zero");
+		return;
+	}
+
+	buffer = safe_emalloc(size, 1, 1);
+	requested_bytes = size;
+
+	status = HPDF_ReadFromStream(doc->h, (HPDF_BYTE *)buffer, &requested_bytes);
+
+	if (status != HPDF_STREAM_EOF && php_haru_status_to_exception(status TSRMLS_CC)) {
+		efree(buffer);
+		return;
+	}
+
+	if (requested_bytes > 0) {
+		buffer[requested_bytes] = '\0';
+		RETURN_STRINGL(buffer, requested_bytes, 0);
+	}
+	efree(buffer);
+	RETURN_FALSE;
 }
 /* }}} */
 
@@ -4872,6 +4967,10 @@ static zend_function_entry harudoc_methods[] = { /* {{{ */
 	PHP_ME(HaruDoc, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, save, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, output, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, saveToStream, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, resetStream, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, getStreamSize, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, readFromStream, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, addPage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, insertPage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, getCurrentPage, NULL, ZEND_ACC_PUBLIC)
