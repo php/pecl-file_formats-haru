@@ -952,7 +952,7 @@ static PHP_METHOD(HaruDoc, output)
 	HPDF_STATUS status;
 	HPDF_UINT32 size, requested_bytes;
 	char *buffer;
-	size_t buffer_size;
+	unsigned int buffer_size;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
 		return;
@@ -2249,7 +2249,7 @@ static PHP_METHOD(HaruPage, setFontAndSize)
 
 	font = (php_harufont *)zend_object_store_get_object(z_font TSRMLS_CC);
 
-	status = HPDF_Page_SetFontAndSize(page->h, font->h, size);
+	status = HPDF_Page_SetFontAndSize(page->h, font->h, (HPDF_REAL)size);
 
 	if (php_haru_status_to_exception(status TSRMLS_CC)) {
 		return;
