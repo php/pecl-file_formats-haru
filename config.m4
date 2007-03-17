@@ -46,6 +46,16 @@ if test "$PHP_HARU" != "no"; then
   PHP_ADD_INCLUDE($HARU_DIR/include)
 
   LIBNAME=hpdf
+  LIBSYMBOL=HPDF_New
+
+  PHP_ADD_LIBRARY_WITH_PATH(hpdf, $HARU_DIR/$PHP_LIBDIR, HARU_SHARED_LIBADD)
+  PHP_CHECK_LIBRARY($LIBNAME, $LIBSYMBOL, [], [
+    AC_MSG_ERROR([Haru configure failed. Please check that the prefix is correct and see config.log for more information.])
+  ], [
+    -L$HARU_DIR/$PHP_LIBDIR 
+  ]) 
+
+  LIBNAME=hpdf
   LIBSYMBOL=HPDF_Stream_WriteToStreamWithDeflate
 
   if test "$PHP_ZLIB_DIR" != "no"; then
