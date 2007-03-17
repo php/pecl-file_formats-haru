@@ -730,6 +730,21 @@ static PHP_METHOD(HaruDoc, __construct)
 }
 /* }}} */
 
+/* {{{ proto bool HaruDoc::resetError()
+ Reset error state in the document handle */
+static PHP_METHOD(HaruDoc, resetError)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	HPDF_ResetError(doc->h);
+	RETURN_TRUE;
+}
+/* }}} */
+
 /* {{{ proto object HaruDoc::addPage()
  Add new page to the document */
 static PHP_METHOD(HaruDoc, addPage)
@@ -4965,6 +4980,7 @@ static PHP_METHOD(HaruOutline, setDestination)
 
 static zend_function_entry harudoc_methods[] = { /* {{{ */
 	PHP_ME(HaruDoc, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, resetError, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, save, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, output, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, saveToStream, NULL, ZEND_ACC_PUBLIC)
