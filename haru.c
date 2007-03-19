@@ -1738,48 +1738,8 @@ static PHP_METHOD(HaruDoc, createOutline)
 	char *title;
 	int title_len;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|zz", &title, &title_len, &parent, &encoder) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|o!o!", &title, &title_len, &parent, ce_haruoutline, &encoder, ce_haruencoder) == FAILURE) {
 		return;
-	}
-
-	if (parent) {
-		switch (Z_TYPE_P(parent)) {
-			case IS_NULL:
-				/* ok */
-				parent = NULL;
-				break;
-			case IS_OBJECT: {
-				zend_class_entry *ce = Z_OBJCE_P(parent);
-				if (ce != ce_haruoutline) {
-					zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "second parameter is expected to be valid HaruOutline instance or NULL, an instance of %s given", ce ? ce->name : "unknown class");
-					return;
-				}
-			}
-				break;
-			default:
-				zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "second parameter is expected to be valid HaruOutline instance or NULL, %s given", zend_zval_type_name(parent));
-				return;
-		}
-	}
-
-	if (encoder) {
-		switch (Z_TYPE_P(encoder)) {
-			case IS_NULL:
-				/* ok */
-				encoder = NULL;
-				break;
-			case IS_OBJECT: {
-				zend_class_entry *ce = Z_OBJCE_P(encoder);
-				if (ce != ce_haruencoder) {
-					zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "third parameter is expected to be valid HaruEncoder instance or NULL, an instance of %s given", ce ? ce->name : "unknown class");
-					return;
-				}
-			}
-				break;
-			default:
-				zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "third parameter is expected to be valid HaruEncoder instance or NULL, %s given", zend_zval_type_name(encoder));
-				return;
-		}
 	}
 
 	if (parent) {
@@ -2166,24 +2126,16 @@ static PHP_METHOD(HaruPage, setDash)
 	int pat_num = 0;
 	long phase;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zl", &pattern, &phase) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a!l", &pattern, &phase) == FAILURE) {
 		return;
 	}
 
-	switch(Z_TYPE_P(pattern)) {
-		/* allow only NULL and arrays */
-		case IS_NULL:
-			break;
-		case IS_ARRAY:
-			pat_num = zend_hash_num_elements(Z_ARRVAL_P(pattern));
-			if (pat_num > 8) {
-				zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "first parameter is expected to be array with at most 8 elements, %d given", pat_num);
-				return;
-			}
-			break;
-		default:
-			zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "first parameter is expected to be array or NULL, %s given", zend_zval_type_name(pattern));
+	if (pattern) {
+		pat_num = zend_hash_num_elements(Z_ARRVAL_P(pattern));
+		if (pat_num > 8) {
+			zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "first parameter is expected to be array with at most 8 elements, %d given", pat_num);
 			return;
+		}
 	}
 
 	if (phase > pat_num) {
