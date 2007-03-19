@@ -2532,12 +2532,12 @@ static PHP_METHOD(HaruPage, getTransMatrix)
 	matrix = HPDF_Page_GetTransMatrix(page->h);
 
 	array_init(return_value);
-	add_assoc_long_ex(return_value, "a", sizeof("a"), matrix.a);
-	add_assoc_long_ex(return_value, "b", sizeof("b"), matrix.b);
-	add_assoc_long_ex(return_value, "c", sizeof("c"), matrix.c);
-	add_assoc_long_ex(return_value, "d", sizeof("d"), matrix.d);
-	add_assoc_long_ex(return_value, "x", sizeof("x"), matrix.x);
-	add_assoc_long_ex(return_value, "y", sizeof("y"), matrix.y);
+	add_assoc_double_ex(return_value, "a", sizeof("a"), matrix.a);
+	add_assoc_double_ex(return_value, "b", sizeof("b"), matrix.b);
+	add_assoc_double_ex(return_value, "c", sizeof("c"), matrix.c);
+	add_assoc_double_ex(return_value, "d", sizeof("d"), matrix.d);
+	add_assoc_double_ex(return_value, "x", sizeof("x"), matrix.x);
+	add_assoc_double_ex(return_value, "y", sizeof("y"), matrix.y);
 }
 /* }}} */
 
@@ -2577,12 +2577,12 @@ static PHP_METHOD(HaruPage, getTextMatrix)
 	matrix = HPDF_Page_GetTextMatrix(page->h);
 
 	array_init(return_value);
-	add_assoc_long_ex(return_value, "a", sizeof("a"), matrix.a);
-	add_assoc_long_ex(return_value, "b", sizeof("b"), matrix.b);
-	add_assoc_long_ex(return_value, "c", sizeof("c"), matrix.c);
-	add_assoc_long_ex(return_value, "d", sizeof("d"), matrix.d);
-	add_assoc_long_ex(return_value, "x", sizeof("x"), matrix.x);
-	add_assoc_long_ex(return_value, "y", sizeof("y"), matrix.y);
+	add_assoc_double_ex(return_value, "a", sizeof("a"), matrix.a);
+	add_assoc_double_ex(return_value, "b", sizeof("b"), matrix.b);
+	add_assoc_double_ex(return_value, "c", sizeof("c"), matrix.c);
+	add_assoc_double_ex(return_value, "d", sizeof("d"), matrix.d);
+	add_assoc_double_ex(return_value, "x", sizeof("x"), matrix.x);
+	add_assoc_double_ex(return_value, "y", sizeof("y"), matrix.y);
 }
 /* }}} */
 
@@ -3532,8 +3532,8 @@ static PHP_METHOD(HaruPage, getCurrentPos)
 	}
 
 	array_init(return_value);
-	add_assoc_long_ex(return_value, "x", sizeof("x"), point.x);
-	add_assoc_long_ex(return_value, "y", sizeof("y"), point.y);
+	add_assoc_double_ex(return_value, "x", sizeof("x"), point.x);
+	add_assoc_double_ex(return_value, "y", sizeof("y"), point.y);
 }
 /* }}} */
 
@@ -3555,8 +3555,8 @@ static PHP_METHOD(HaruPage, getCurrentTextPos)
 	}
 
 	array_init(return_value);
-	add_assoc_long_ex(return_value, "x", sizeof("x"), point.x);
-	add_assoc_long_ex(return_value, "y", sizeof("y"), point.y);
+	add_assoc_double_ex(return_value, "x", sizeof("x"), point.x);
+	add_assoc_double_ex(return_value, "y", sizeof("y"), point.y);
 }
 /* }}} */
 
@@ -3706,7 +3706,7 @@ static PHP_METHOD(HaruPage, getDash)
 {
 	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
 	HPDF_DashMode mode;
-	int i;
+	unsigned int i;
 	zval *element;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
@@ -4145,8 +4145,8 @@ static PHP_METHOD(HaruImage, getSize)
 	}
 	
 	array_init(return_value);
-	add_assoc_long_ex(return_value, "width", sizeof("width"), ret.x);
-	add_assoc_long_ex(return_value, "height", sizeof("height"), ret.y);
+	add_assoc_double_ex(return_value, "width", sizeof("width"), ret.x);
+	add_assoc_double_ex(return_value, "height", sizeof("height"), ret.y);
 }
 /* }}} */
 
