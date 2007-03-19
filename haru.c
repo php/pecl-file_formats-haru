@@ -2227,9 +2227,9 @@ static PHP_METHOD(HaruPage, setDash)
 }
 /* }}} */
 
-/* {{{ proto bool HaruPage::setFlat(double flatness)
+/* {{{ proto bool HaruPage::setFlatness(double flatness)
  Set flatness for the page */
-static PHP_METHOD(HaruPage, setFlat)
+static PHP_METHOD(HaruPage, setFlatness)
 {
 	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
 	HPDF_STATUS status;
@@ -2394,19 +2394,19 @@ static PHP_METHOD(HaruPage, setTextRenderingMode)
 }
 /* }}} */
 
-/* {{{ proto bool HaruPage::setTextRise(double raise)
+/* {{{ proto bool HaruPage::setTextRise(double rise)
  */
 static PHP_METHOD(HaruPage, setTextRise)
 {
 	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
 	HPDF_STATUS status;
-	double raise;
+	double rise;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &raise) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &rise) == FAILURE) {
 		return;
 	}
 
-	status = HPDF_Page_SetTextRise(page->h, (HPDF_REAL)raise);
+	status = HPDF_Page_SetTextRise(page->h, (HPDF_REAL)rise);
 
 	if (php_haru_status_to_exception(status TSRMLS_CC)) {
 		return;
@@ -2717,7 +2717,7 @@ static PHP_METHOD(HaruPage, eofill)
 /* }}} */
 
 /* {{{ proto bool HaruPage::fillStroke([bool close_path])
- Fills current path using nonzero winding number rule, then paint the path */
+ Fill current path using nonzero winding number rule, then paint the path */
 static PHP_METHOD(HaruPage, fillStroke)
 {
 	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
@@ -2890,7 +2890,7 @@ static PHP_METHOD(HaruPage, curveTo3)
 }
 /* }}} */
 
-/* {{{ proto bool HaruPage::rectangle()
+/* {{{ proto bool HaruPage::rectangle(double x, double y, double width, double height)
  Append a rectangle to the current path */
 static PHP_METHOD(HaruPage, rectangle)
 {
@@ -3783,9 +3783,9 @@ static PHP_METHOD(HaruPage, getDash)
 }
 /* }}} */
 
-/* {{{ proto double HaruPage::getFlat()
+/* {{{ proto double HaruPage::getFlatness()
  Get the flatness of the page */
-static PHP_METHOD(HaruPage, getFlat)
+static PHP_METHOD(HaruPage, getFlatness)
 {
 	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
 	HPDF_REAL flatness;
@@ -4070,7 +4070,7 @@ static PHP_METHOD(HaruPage, getGrayStroke)
 }
 /* }}} */
 
-/* {{{ proto bool HaruPage::getFillingColorSpace()
+/* {{{ proto int HaruPage::getFillingColorSpace()
  Get the current filling color space */
 static PHP_METHOD(HaruPage, getFillingColorSpace)
 {
@@ -4091,7 +4091,7 @@ static PHP_METHOD(HaruPage, getFillingColorSpace)
 }
 /* }}} */
 
-/* {{{ proto bool HaruPage::getStrokingColorSpace()
+/* {{{ proto int HaruPage::getStrokingColorSpace()
  Get the current stroking color space */
 static PHP_METHOD(HaruPage, getStrokingColorSpace)
 {
@@ -4112,7 +4112,7 @@ static PHP_METHOD(HaruPage, getStrokingColorSpace)
 }
 /* }}} */
 
-/* {{{ proto bool HaruPage::setSlideShow()
+/* {{{ proto bool HaruPage::setSlideShow(int type, double disp_time, double trans_time)
  Set transition style for the page */
 static PHP_METHOD(HaruPage, setSlideShow)
 {
@@ -4126,7 +4126,7 @@ static PHP_METHOD(HaruPage, setSlideShow)
 	}
 
 	switch(type) {
-		case HPDF_TS_WIPE_RIGHT :
+		case HPDF_TS_WIPE_RIGHT:
 		case HPDF_TS_WIPE_UP:
 		case HPDF_TS_WIPE_LEFT:
 		case HPDF_TS_WIPE_DOWN:
@@ -5034,7 +5034,7 @@ static zend_function_entry harupage_methods[] = { /* {{{ */
 	PHP_ME(HaruPage, setLineCap, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, setLineJoin, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, setMiterLimit, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(HaruPage, setFlat, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruPage, setFlatness, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, setDash, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, Concat, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, getTransMatrix, NULL, ZEND_ACC_PUBLIC)
@@ -5099,7 +5099,7 @@ static zend_function_entry harupage_methods[] = { /* {{{ */
 	PHP_ME(HaruPage, getLineJoin, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, getMiterLimit, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, getDash, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(HaruPage, getFlat, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(HaruPage, getFlatness, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, getCharSpace, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, getWordSpace, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, getHorizontalScaling, NULL, ZEND_ACC_PUBLIC)
@@ -5256,7 +5256,15 @@ PHP_MINIT_FUNCTION(haru)
 	HARU_CLASS_CONST(ce_harudoc, "CS_DEVICE_GRAY", HPDF_CS_DEVICE_GRAY);
 	HARU_CLASS_CONST(ce_harudoc, "CS_DEVICE_RGB", HPDF_CS_DEVICE_RGB);
 	HARU_CLASS_CONST(ce_harudoc, "CS_DEVICE_CMYK", HPDF_CS_DEVICE_CMYK);
-	
+	HARU_CLASS_CONST(ce_harudoc, "CS_CAL_GRAY", HPDF_CS_CAL_GRAY);
+	HARU_CLASS_CONST(ce_harudoc, "CS_CAL_RGB", HPDF_CS_CAL_RGB);
+	HARU_CLASS_CONST(ce_harudoc, "CS_LAB", HPDF_CS_LAB);
+	HARU_CLASS_CONST(ce_harudoc, "CS_ICC_BASED", HPDF_CS_ICC_BASED);
+	HARU_CLASS_CONST(ce_harudoc, "CS_SEPARATION", HPDF_CS_SEPARATION);
+	HARU_CLASS_CONST(ce_harudoc, "CS_DEVICE_N", HPDF_CS_DEVICE_N);
+	HARU_CLASS_CONST(ce_harudoc, "CS_INDEXED", HPDF_CS_INDEXED);
+	HARU_CLASS_CONST(ce_harudoc, "CS_PATTERN", HPDF_CS_PATTERN);
+
 	HARU_CLASS_CONST(ce_harudoc, "ENABLE_READ", HPDF_ENABLE_READ);
 	HARU_CLASS_CONST(ce_harudoc, "ENABLE_PRINT", HPDF_ENABLE_PRINT);
 	HARU_CLASS_CONST(ce_harudoc, "ENABLE_EDIT_ALL", HPDF_ENABLE_EDIT_ALL);
