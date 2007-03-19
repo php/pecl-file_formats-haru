@@ -663,7 +663,7 @@ static int php_haru_check_doc_error(php_harudoc *doc TSRMLS_DC) /* {{{ */
 static HPDF_Rect php_haru_array_to_rect(zval *array) /* {{{ */
 {
 	int i = 0;
-	zval **element, tmp;
+	zval **element, tmp, tmp_element;
 	HPDF_Rect r;
 
 	for (zend_hash_internal_pointer_reset(Z_ARRVAL_P(array));
@@ -674,25 +674,27 @@ static HPDF_Rect php_haru_array_to_rect(zval *array) /* {{{ */
 			zval_copy_ctor(&tmp);
 			INIT_PZVAL(&tmp);
 			convert_to_double(&tmp);
-			*element = &tmp;
+			tmp_element = tmp;
+		} else {
+			tmp_element = **element;
 		}
 
 		switch(i) {
 			case 0:
-				r.left = Z_DVAL_PP(element);
+				r.left = Z_DVAL(tmp_element);
 				break;
 			case 1:
-				r.bottom = Z_DVAL_PP(element);
+				r.bottom = Z_DVAL(tmp_element);
 				break;
 			case 2:
-				r.right = Z_DVAL_PP(element);
+				r.right = Z_DVAL(tmp_element);
 				break;
 			case 3:
-				r.top = Z_DVAL_PP(element);
+				r.top = Z_DVAL(tmp_element);
 				break;
 		}
 
-		if (*element == &tmp) {
+		if (Z_TYPE_PP(element) != IS_DOUBLE) {
 			zval_dtor(&tmp);
 		}
 		i++;
@@ -2190,7 +2192,7 @@ static PHP_METHOD(HaruPage, setDash)
 	}
 
 	if (pat_num > 0) {
-		zval **element, tmp;
+		zval **element, tmp, tmp_element;
 		int i = 0;
 
 		pat = emalloc(pat_num * sizeof(HPDF_UINT16)); /* safe */
@@ -2203,12 +2205,14 @@ static PHP_METHOD(HaruPage, setDash)
 				zval_copy_ctor(&tmp);
 				INIT_PZVAL(&tmp);
 				convert_to_long(&tmp);
-				*element = &tmp;
+				tmp_element = tmp;
+			} else {
+				tmp_element = **element;
 			}
 
-			pat[i++] = Z_LVAL_PP(element);
+			pat[i++] = Z_LVAL(tmp_element);
 
-			if (*element == &tmp) {
+			if (Z_TYPE_PP(element) != IS_LONG) {
 				zval_dtor(&tmp);
 			}
 		}
