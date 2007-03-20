@@ -13,11 +13,6 @@ if test -z "$PHP_PNG_DIR"; then
   [  --with-png-dir[=DIR]      Haru: Set the path to libpng install prefix], no, no)
 fi
 
-if test -z "$PHP_JPEG_DIR"; then
-  PHP_ARG_WITH(jpeg-dir, for the location of libjpeg,
-  [  --with-jpeg-dir[=DIR]     Haru: Set the path to libjpeg install prefix], no, no)
-fi
-
 if test "$PHP_HARU" != "no"; then
   
   SEARCH_PATH="/usr/local/ /usr/"
