@@ -29,6 +29,8 @@
 #include "php_haru.h"
 #include <hpdf.h>
 
+#define PHP_HARU_VERSION "0.0.1"
+
 #define PHP_HARU_BUF_SIZE 32768
 
 /* {{{ structs and static vars */
@@ -5171,7 +5173,7 @@ zend_module_entry haru_module_entry = {
 	NULL,
 	PHP_MINFO(haru),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.1",
+	PHP_HARU_VERSION,
 #endif
 	STANDARD_MODULE_PROPERTIES
 };
@@ -5368,6 +5370,8 @@ PHP_MINFO_FUNCTION(haru)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Haru PDF support", "enabled");
+	php_info_print_table_row(2, "Version", PHP_HARU_VERSION);
+	php_info_print_table_row(2, "libharu version", HPDF_VERSION_TEXT);
 	php_info_print_table_end();
 
 }
