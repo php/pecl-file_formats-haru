@@ -29,9 +29,18 @@
 #include "php_haru.h"
 #include <hpdf.h>
 
-#define PHP_HARU_VERSION "0.0.1"
-
+#define PHP_HARU_VERSION "0.0.2"
 #define PHP_HARU_BUF_SIZE 32768
+
+#ifdef Z_SET_REFCOUNT_P
+# define HARU_SET_REFCOUNT_AND_IS_REF(z) \
+	Z_SET_REFCOUNT_P(z, 1); \
+	Z_SET_ISREF_P(z);
+#else 
+# define HARU_SET_REFCOUNT_AND_IS_REF(z) \
+	z->refcount = 1; \
+	z->is_ref = 1;
+#endif
 
 /* {{{ structs and static vars */
 static zend_class_entry *ce_haruexception;
@@ -765,9 +774,7 @@ static PHP_METHOD(HaruDoc, addPage)
 	PHP_HARU_NULL_CHECK(p, "Cannot create HaruPage handle");
 
 	object_init_ex(return_value, ce_harupage);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
-	
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	page = (php_harupage *)zend_object_store_get_object(return_value TSRMLS_CC);
 
 	page->doc = *getThis();
@@ -800,8 +807,7 @@ static PHP_METHOD(HaruDoc, insertPage)
 	PHP_HARU_NULL_CHECK(p, "Cannot create HaruPage handle");
 
 	object_init_ex(return_value, ce_harupage);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	page = (php_harupage *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -836,8 +842,7 @@ static PHP_METHOD(HaruDoc, getCurrentPage)
 	}
 
 	object_init_ex(return_value, ce_harupage);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	page = (php_harupage *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -870,8 +875,7 @@ static PHP_METHOD(HaruDoc, getEncoder)
 	PHP_HARU_NULL_CHECK(e, "Cannot create HaruEncoder handle");
 
 	object_init_ex(return_value, ce_haruencoder);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	encoder = (php_haruencoder *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -906,8 +910,7 @@ static PHP_METHOD(HaruDoc, getCurrentEncoder)
 	}
 
 	object_init_ex(return_value, ce_haruencoder);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	encoder = (php_haruencoder *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -1359,8 +1362,7 @@ static PHP_METHOD(HaruDoc, getFont)
 	PHP_HARU_NULL_CHECK(f, "Cannot create HaruFont handle");
 
 	object_init_ex(return_value, ce_harufont);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	font = (php_harufont*)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -1488,8 +1490,7 @@ static PHP_METHOD(HaruDoc, loadPNG)
 	PHP_HARU_NULL_CHECK(i, "Failed to load PNG image");
 
 	object_init_ex(return_value, ce_haruimage);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	image = (php_haruimage *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -1525,8 +1526,7 @@ static PHP_METHOD(HaruDoc, loadJPEG)
 	PHP_HARU_NULL_CHECK(i, "Failed to load JPEG image");
 
 	object_init_ex(return_value, ce_haruimage);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	image = (php_haruimage *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -1574,8 +1574,7 @@ static PHP_METHOD(HaruDoc, loadRaw)
 	PHP_HARU_NULL_CHECK(i, "Failed to load RAW image");
 
 	object_init_ex(return_value, ce_haruimage);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	image = (php_haruimage *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -1762,8 +1761,7 @@ static PHP_METHOD(HaruDoc, createOutline)
 	PHP_HARU_NULL_CHECK(outline, "Cannot create HaruOutline handle");
 
 	object_init_ex(return_value, ce_haruoutline);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	o = (php_haruoutline *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -3301,8 +3299,7 @@ static PHP_METHOD(HaruPage, createDestination)
 	PHP_HARU_NULL_CHECK(dest, "Cannot create HaruDestination handle");
 
 	object_init_ex(return_value, ce_harudestination);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	destination = (php_harudestination *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -3351,8 +3348,7 @@ static PHP_METHOD(HaruPage, createTextAnnotation)
 	PHP_HARU_NULL_CHECK(ann, "Cannot create HaruAnnotation handle");
 
 	object_init_ex(return_value, ce_haruannotation);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	annotation = (php_haruannotation *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -3395,8 +3391,7 @@ static PHP_METHOD(HaruPage, createLinkAnnotation)
 	PHP_HARU_NULL_CHECK(ann, "Cannot create HaruAnnotation handle");
 
 	object_init_ex(return_value, ce_haruannotation);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	annotation = (php_haruannotation *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -3438,8 +3433,7 @@ static PHP_METHOD(HaruPage, createURLAnnotation)
 	PHP_HARU_NULL_CHECK(ann, "Cannot create HaruAnnotation handle");
 
 	object_init_ex(return_value, ce_haruannotation);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	annotation = (php_haruannotation *)zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -3585,8 +3579,7 @@ static PHP_METHOD(HaruPage, getCurrentFont)
 	}
 	
 	object_init_ex(return_value, ce_harufont);
-	return_value->refcount = 1;
-	return_value->is_ref = 1;
+	HARU_SET_REFCOUNT_AND_IS_REF(return_value);
 	
 	font = (php_harufont *)zend_object_store_get_object(return_value TSRMLS_CC);
 
