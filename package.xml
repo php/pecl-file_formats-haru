@@ -14,18 +14,19 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>tony2001@php.net</email>
   <active>yes</active>
  </lead>
- <date>2007-03-26</date>
+ <date>2008-02-01</date>
  <time>12:45:00</time>
  <version>
-  <release>0.0.1</release>
-  <api>0.0.1</api>
+  <release>0.0.2</release>
+  <api>0.0.2</api>
  </version>
  <stability>
   <release>beta</release>
   <api>beta</api>
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
- <notes>First PECL release</notes>
+ <notes>- Fixed build with PHP 5.3.x.
+ </notes>
  <contents>
   <dir name="/">
    <file name="config.m4" role="src" />
@@ -52,4 +53,18 @@ http://pear.php.net/dtd/package-2.0.xsd">
  <extsrcrelease>
   <configureoption default="autodetect" name="with-haru" prompt="Please provide the prefix of libharu installation" />
  </extsrcrelease>
+ <changelog>
+  <date>2007-03-26</date>
+  <time>12:45:00</time>
+  <version>
+   <release>0.0.1</release>
+   <api>0.0.1</api>
+  </version>
+  <stability>
+   <release>beta</release>
+   <api>beta</api>
+  </stability>
+  <license uri="http://www.php.net/license">PHP</license>
+  <notes>First PECL release</notes>
+ </changelog>
 </package>
