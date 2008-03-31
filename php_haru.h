@@ -24,6 +24,8 @@
 extern zend_module_entry haru_module_entry;
 #define phpext_haru_ptr &haru_module_entry
 
+#define PHP_HARU_VERSION "1.0.0-dev"
+
 #ifdef ZTS
 #include "TSRM.h"
 #endif

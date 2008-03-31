@@ -29,7 +29,6 @@
 #include "php_haru.h"
 #include <hpdf.h>
 
-#define PHP_HARU_VERSION "1.0.0"
 #define PHP_HARU_BUF_SIZE 32768
 
 #ifdef Z_SET_REFCOUNT_P
