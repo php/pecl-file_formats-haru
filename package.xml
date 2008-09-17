@@ -26,6 +26,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>- Fixed build with PHP 5.3.x.
+- Fixed possible issue in HaruDoc::output() (thanks to Matt Underwood)
  </notes>
  <contents>
   <dir name="/">
