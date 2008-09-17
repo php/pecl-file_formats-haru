@@ -998,7 +998,7 @@ static PHP_METHOD(HaruDoc, output)
 	while (size > 0) {
 		requested_bytes = buffer_size;
 
-		status = HPDF_ReadFromStream(doc->h, (HPDF_BYTE *)buffer, &buffer_size);
+		status = HPDF_ReadFromStream(doc->h, (HPDF_BYTE *)buffer, &requested_bytes);
 		if (status != HPDF_STREAM_EOF && php_haru_status_to_exception(status TSRMLS_CC)) {
 			efree(buffer);
 			return;
