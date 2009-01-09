@@ -14,19 +14,18 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <email>tony2001@php.net</email>
   <active>yes</active>
  </lead>
- <date>2008-11-19</date>
+ <date>2009-01-12</date>
  <time>14:00:00</time>
  <version>
-  <release>1.0.0</release>
-  <api>1.0.0</api>
+  <release>1.0.1</release>
+  <api>1.0.1</api>
  </version>
  <stability>
   <release>stable</release>
   <api>stable</api>
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
- <notes>- Fixed build with PHP 5.3.x.
-- Fixed possible issue in HaruDoc::output() (thanks to Matt Underwood)
+ <notes>- Added HaruPage::setZoom() and HaruPage::addSMask() (available when compiled with libHaru >= 2.2.0).
  </notes>
  <contents>
   <dir name="/">
@@ -55,17 +54,35 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <configureoption default="autodetect" name="with-haru" prompt="Please provide the prefix of libharu installation" />
  </extsrcrelease>
  <changelog>
-  <date>2007-03-26</date>
-  <time>12:45:00</time>
-  <version>
-   <release>0.0.1</release>
-   <api>0.0.1</api>
-  </version>
-  <stability>
-   <release>beta</release>
-   <api>beta</api>
-  </stability>
-  <license uri="http://www.php.net/license">PHP</license>
-  <notes>First PECL release</notes>
+  <release>
+   <date>2008-11-19</date>
+   <time>14:00:00</time>
+   <version>
+    <release>1.0.0</release>
+    <api>1.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="http://www.php.net/license">PHP</license>
+   <notes>- Fixed build with PHP 5.3.x.
+  - Fixed possible issue in HaruDoc::output() (thanks to Matt Underwood)
+   </notes>
+  </release>
+  <release>
+   <date>2007-03-26</date>
+   <time>12:45:00</time>
+   <version>
+    <release>0.0.1</release>
+    <api>0.0.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <license uri="http://www.php.net/license">PHP</license>
+   <notes>First PECL release</notes>
+  </release>
  </changelog>
 </package>

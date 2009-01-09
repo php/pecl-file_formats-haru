@@ -988,7 +988,7 @@ static PHP_METHOD(HaruDoc, output)
 	size = HPDF_GetStreamSize(doc->h);
 	
 	if (!size) {
-		zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "Zero stream size, the PDF documents contains no data");
+		zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, "Zero stream size, the PDF document contains no data");
 		return;
 	}
 
@@ -1020,7 +1020,7 @@ static PHP_METHOD(HaruDoc, output)
 /* }}} */
 
 /* {{{ proto bool HaruDoc::saveToStream()
- Save the document data to a temprorary stream */
+ Save the document data to a temporary stream */
 static PHP_METHOD(HaruDoc, saveToStream)
 {
 	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
@@ -4109,6 +4109,29 @@ static PHP_METHOD(HaruPage, setSlideShow)
 }
 /* }}} */
 
+#if defined(HPDF_VERSION_ID) && HPDF_VERSION_ID >= 20200
+/* {{{ proto bool HaruPage::setZoom(double zoom)
+ Set size and direction of the page */
+static PHP_METHOD(HaruPage, setZoom)
+{
+	php_harupage *page = (php_harupage *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+	double zoom;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "f", &zoom) == FAILURE) {
+		return;
+	}
+
+	status = HPDF_Page_SetZoom(page->h, (HPDF_REAL) zoom); 
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+#endif
+
 /* }}} */
 
 /* HaruImage methods {{{ */
@@ -4273,6 +4296,32 @@ static PHP_METHOD(HaruImage, setMaskImage)
 	RETURN_TRUE;
 }
 /* }}} */
+
+#if defined(HPDF_VERSION_ID) && HPDF_VERSION_ID >= 20200
+/* {{{ proto bool HaruImage::addSMask(object smask_image)
+ Set image transparency mask */
+static PHP_METHOD(HaruImage, addSMask)
+{
+	php_haruimage *image = (php_haruimage *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	php_haruimage *smask_image;
+	HPDF_STATUS status;
+	zval *z_smask_image;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &z_smask_image, ce_haruimage) == FAILURE) {
+		return;
+	}
+
+	smask_image = (php_haruimage *)zend_object_store_get_object(z_smask_image TSRMLS_CC);
+
+	status = HPDF_Image_AddSMask(image->h, smask_image->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+#endif
 
 /* }}} */
 
@@ -5300,6 +5349,12 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_harupage_setslideshow, 0, 0, 3)
 	ZEND_ARG_INFO(0, trans_time)
 ZEND_END_ARG_INFO()
 
+#if defined(HPDF_VERSION_ID) && HPDF_VERSION_ID >= 20200
+ZEND_BEGIN_ARG_INFO_EX(arginfo_harupage_setzoom, 0, 0, 1)
+	ZEND_ARG_INFO(0, zoom)
+ZEND_END_ARG_INFO()
+#endif
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_haruimage_setcolormask, 0, 0, 6)
 	ZEND_ARG_INFO(0, rmin)
 	ZEND_ARG_INFO(0, rmax)
@@ -5312,6 +5367,12 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_haruimage_setmaskimage, 0, 0, 1)
 	ZEND_ARG_INFO(0, mask_image)
 ZEND_END_ARG_INFO()
+
+#if defined(HPDF_VERSION_ID) && HPDF_VERSION_ID >= 20200
+ZEND_BEGIN_ARG_INFO_EX(arginfo_haruimage_addsmask, 0, 0, 1)
+	ZEND_ARG_INFO(0, smask_image)
+ZEND_END_ARG_INFO()
+#endif
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_harufont_getunicodewidth, 0, 0, 1)
 	ZEND_ARG_INFO(0, character)
@@ -5535,6 +5596,9 @@ static zend_function_entry harupage_methods[] = { /* {{{ */
 	PHP_ME(HaruPage, getFillingColorSpace, 		arginfo_harudoc___void, 		ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, getStrokingColorSpace, 	arginfo_harudoc___void, 		ZEND_ACC_PUBLIC)
 	PHP_ME(HaruPage, setSlideShow, 				arginfo_harupage_setslideshow, 	ZEND_ACC_PUBLIC)
+#if defined(HPDF_VERSION_ID) && HPDF_VERSION_ID >= 20200
+	PHP_ME(HaruPage, setZoom,					arginfo_harupage_setzoom,		ZEND_ACC_PUBLIC)
+#endif
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -5563,6 +5627,9 @@ static zend_function_entry haruimage_methods[] = { /* {{{ */
 	PHP_ME(HaruImage, getColorSpace, 		arginfo_harudoc___void, 		ZEND_ACC_PUBLIC)
 	PHP_ME(HaruImage, setColorMask, 		arginfo_haruimage_setcolormask, ZEND_ACC_PUBLIC)
 	PHP_ME(HaruImage, setMaskImage, 		arginfo_haruimage_setmaskimage, ZEND_ACC_PUBLIC)
+#if defined(HPDF_VERSION_ID) && HPDF_VERSION_ID >= 20200
+	PHP_ME(HaruImage, addSMask,				arginfo_haruimage_addsmask,		ZEND_ACC_PUBLIC)
+#endif
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -5621,26 +5688,6 @@ static zend_function_entry haru_functions[] = { /* {{{ */
 };
 /* }}} */
 
-/* {{{ haru_module_entry
- */
-zend_module_entry haru_module_entry = {
-#if ZEND_MODULE_API_NO >= 20010901
-	STANDARD_MODULE_HEADER,
-#endif
-	"haru",
-	haru_functions,
-	PHP_MINIT(haru),
-	PHP_MSHUTDOWN(haru),
-	NULL,
-	NULL,
-	PHP_MINFO(haru),
-#if ZEND_MODULE_API_NO >= 20010901
-	PHP_HARU_VERSION,
-#endif
-	STANDARD_MODULE_PROPERTIES
-};
-/* }}} */
-
 #ifdef COMPILE_DL_HARU
 ZEND_GET_MODULE(haru)
 #endif
@@ -5657,7 +5704,7 @@ ZEND_GET_MODULE(haru)
 
 /* {{{ PHP_MINIT_FUNCTION
  */
-PHP_MINIT_FUNCTION(haru)
+static PHP_MINIT_FUNCTION(haru)
 {
 	zend_class_entry ce;
 
@@ -5818,17 +5865,9 @@ PHP_MINIT_FUNCTION(haru)
 }
 /* }}} */
 
-/* {{{ PHP_MSHUTDOWN_FUNCTION
- */
-PHP_MSHUTDOWN_FUNCTION(haru)
-{
-	return SUCCESS;
-}
-/* }}} */
-
 /* {{{ PHP_MINFO_FUNCTION
  */
-PHP_MINFO_FUNCTION(haru)
+static PHP_MINFO_FUNCTION(haru)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Haru PDF support", "enabled");
@@ -5837,6 +5876,26 @@ PHP_MINFO_FUNCTION(haru)
 	php_info_print_table_end();
 
 }
+/* }}} */
+
+/* {{{ haru_module_entry
+ */
+zend_module_entry haru_module_entry = {
+#if ZEND_MODULE_API_NO >= 20010901
+	STANDARD_MODULE_HEADER,
+#endif
+	"haru",
+	haru_functions,
+	PHP_MINIT(haru),
+	NULL,
+	NULL,
+	NULL,
+	PHP_MINFO(haru),
+#if ZEND_MODULE_API_NO >= 20010901
+	PHP_HARU_VERSION,
+#endif
+	STANDARD_MODULE_PROPERTIES
+};
 /* }}} */
 
 /*
