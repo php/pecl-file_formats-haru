@@ -169,12 +169,16 @@ static zend_object_value php_harudoc_new(zend_class_entry *ce TSRMLS_DC) /* {{{ 
 {
 	php_harudoc *doc;
 	zend_object_value retval;
+	zval *tmp;
 
 	doc = ecalloc(1, sizeof(*doc));
 	zend_object_std_init(&doc->std, ce TSRMLS_CC);
 
+	zend_hash_copy(doc->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+
 	retval.handle = zend_objects_store_put(doc, (zend_objects_store_dtor_t)zend_objects_destroy_object, php_harudoc_dtor, NULL TSRMLS_CC);
 	retval.handlers = &php_harudoc_handlers;
+	    
 	return retval;
 }
 /* }}} */
@@ -198,9 +202,12 @@ static zend_object_value php_harupage_new(zend_class_entry *ce TSRMLS_DC) /* {{{
 {
 	php_harupage *page;
 	zend_object_value retval;
+	zval *tmp;
 
 	page = ecalloc(1, sizeof(*page));
 	zend_object_std_init(&page->std, ce TSRMLS_CC);
+
+	zend_hash_copy(page->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	retval.handle = zend_objects_store_put(page, (zend_objects_store_dtor_t)zend_objects_destroy_object, php_harupage_dtor, NULL TSRMLS_CC);
 	retval.handlers = &php_harupage_handlers;
@@ -227,9 +234,12 @@ static zend_object_value php_harufont_new(zend_class_entry *ce TSRMLS_DC) /* {{{
 {
 	php_harufont *font;
 	zend_object_value retval;
+	zval *tmp;
 
 	font = ecalloc(1, sizeof(*font));
 	zend_object_std_init(&font->std, ce TSRMLS_CC);
+
+	zend_hash_copy(font->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	retval.handle = zend_objects_store_put(font, (zend_objects_store_dtor_t)zend_objects_destroy_object, php_harufont_dtor, NULL TSRMLS_CC);
 	retval.handlers = &php_harufont_handlers;
@@ -261,9 +271,12 @@ static zend_object_value php_haruimage_new(zend_class_entry *ce TSRMLS_DC) /* {{
 {
 	php_haruimage *image;
 	zend_object_value retval;
+	zval *tmp;
 
 	image = ecalloc(1, sizeof(*image));
 	zend_object_std_init(&image->std, ce TSRMLS_CC);
+
+	zend_hash_copy(image->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	retval.handle = zend_objects_store_put(image, (zend_objects_store_dtor_t)zend_objects_destroy_object, php_haruimage_dtor, NULL TSRMLS_CC);
 	retval.handlers = &php_haruimage_handlers;
@@ -290,9 +303,12 @@ static zend_object_value php_harudestination_new(zend_class_entry *ce TSRMLS_DC)
 {
 	php_harudestination *destination;
 	zend_object_value retval;
+	zval *tmp;
 
 	destination = ecalloc(1, sizeof(*destination));
 	zend_object_std_init(&destination->std, ce TSRMLS_CC);
+
+	zend_hash_copy(destination->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	retval.handle = zend_objects_store_put(destination, (zend_objects_store_dtor_t)zend_objects_destroy_object, php_harudestination_dtor, NULL TSRMLS_CC);
 	retval.handlers = &php_harudestination_handlers;
@@ -319,9 +335,12 @@ static zend_object_value php_haruannotation_new(zend_class_entry *ce TSRMLS_DC) 
 {
 	php_haruannotation *annotation;
 	zend_object_value retval;
+	zval *tmp;
 
 	annotation = ecalloc(1, sizeof(*annotation));
 	zend_object_std_init(&annotation->std, ce TSRMLS_CC);
+
+	zend_hash_copy(annotation->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	retval.handle = zend_objects_store_put(annotation, (zend_objects_store_dtor_t)zend_objects_destroy_object, php_haruannotation_dtor, NULL TSRMLS_CC);
 	retval.handlers = &php_haruannotation_handlers;
@@ -348,9 +367,12 @@ static zend_object_value php_haruencoder_new(zend_class_entry *ce TSRMLS_DC) /* 
 {
 	php_haruencoder *encoder;
 	zend_object_value retval;
+	zval *tmp;
 
 	encoder = ecalloc(1, sizeof(*encoder));
 	zend_object_std_init(&encoder->std, ce TSRMLS_CC);
+
+	zend_hash_copy(encoder->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	retval.handle = zend_objects_store_put(encoder, (zend_objects_store_dtor_t)zend_objects_destroy_object, php_haruencoder_dtor, NULL TSRMLS_CC);
 	retval.handlers = &php_haruencoder_handlers;
@@ -377,9 +399,12 @@ static zend_object_value php_haruoutline_new(zend_class_entry *ce TSRMLS_DC) /* 
 {
 	php_haruoutline *outline;
 	zend_object_value retval;
+	zval *tmp;
 
 	outline = ecalloc(1, sizeof(*outline));
 	zend_object_std_init(&outline->std, ce TSRMLS_CC);
+
+	zend_hash_copy(outline->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	retval.handle = zend_objects_store_put(outline, (zend_objects_store_dtor_t)zend_objects_destroy_object, php_haruoutline_dtor, NULL TSRMLS_CC);
 	retval.handlers = &php_haruoutline_handlers;
