@@ -658,6 +658,9 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 		case HPDF_INVALID_FONT:
 			*msg = estrdup("An invalid font-handle was specified");
 			break;
+		case HPDF_PAGE_INSUFFICIENT_SPACE:
+			*msg = estrdup("Insufficient space for text");
+			break;
 		default:
 			*msg = estrdup("Unknown error occured, please report");
 			break;
