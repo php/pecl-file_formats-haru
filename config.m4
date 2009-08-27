@@ -19,7 +19,7 @@ if test "$PHP_HARU" != "no"; then
   SEARCH_FOR="include/hpdf.h"
   if test "$PHP_HARU" = "yes"; then
 	AC_MSG_CHECKING([for Haru in default path])
-    for i in "$SEARCH_PATH"; do
+    for i in $SEARCH_PATH; do
       if test -r "$i/$SEARCH_FOR"; then
         HARU_DIR="$i"
         AC_MSG_RESULT(found in $i)
