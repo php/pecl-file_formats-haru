@@ -169,7 +169,9 @@ static zend_object_value php_harudoc_new(zend_class_entry *ce TSRMLS_DC) /* {{{ 
 {
 	php_harudoc *doc;
 	zend_object_value retval;
+#if ZEND_MODULE_API_NO  < 20100409 
 	zval *tmp;
+#endif
 
 	doc = ecalloc(1, sizeof(*doc));
 	zend_object_std_init(&doc->std, ce TSRMLS_CC);
@@ -206,7 +208,9 @@ static zend_object_value php_harupage_new(zend_class_entry *ce TSRMLS_DC) /* {{{
 {
 	php_harupage *page;
 	zend_object_value retval;
+#if ZEND_MODULE_API_NO  < 20100409 
 	zval *tmp;
+#endif
 
 	page = ecalloc(1, sizeof(*page));
 	zend_object_std_init(&page->std, ce TSRMLS_CC);
@@ -242,7 +246,9 @@ static zend_object_value php_harufont_new(zend_class_entry *ce TSRMLS_DC) /* {{{
 {
 	php_harufont *font;
 	zend_object_value retval;
+#if ZEND_MODULE_API_NO  < 20100409 
 	zval *tmp;
+#endif
 
 	font = ecalloc(1, sizeof(*font));
 	zend_object_std_init(&font->std, ce TSRMLS_CC);
@@ -283,7 +289,9 @@ static zend_object_value php_haruimage_new(zend_class_entry *ce TSRMLS_DC) /* {{
 {
 	php_haruimage *image;
 	zend_object_value retval;
+#if ZEND_MODULE_API_NO  < 20100409 
 	zval *tmp;
+#endif
 
 	image = ecalloc(1, sizeof(*image));
 	zend_object_std_init(&image->std, ce TSRMLS_CC);
@@ -319,7 +327,9 @@ static zend_object_value php_harudestination_new(zend_class_entry *ce TSRMLS_DC)
 {
 	php_harudestination *destination;
 	zend_object_value retval;
+#if ZEND_MODULE_API_NO  < 20100409 
 	zval *tmp;
+#endif
 
 	destination = ecalloc(1, sizeof(*destination));
 	zend_object_std_init(&destination->std, ce TSRMLS_CC);
@@ -355,7 +365,9 @@ static zend_object_value php_haruannotation_new(zend_class_entry *ce TSRMLS_DC) 
 {
 	php_haruannotation *annotation;
 	zend_object_value retval;
+#if ZEND_MODULE_API_NO  < 20100409 
 	zval *tmp;
+#endif
 
 	annotation = ecalloc(1, sizeof(*annotation));
 	zend_object_std_init(&annotation->std, ce TSRMLS_CC);
@@ -391,7 +403,9 @@ static zend_object_value php_haruencoder_new(zend_class_entry *ce TSRMLS_DC) /* 
 {
 	php_haruencoder *encoder;
 	zend_object_value retval;
+#if ZEND_MODULE_API_NO  < 20100409 
 	zval *tmp;
+#endif
 
 	encoder = ecalloc(1, sizeof(*encoder));
 	zend_object_std_init(&encoder->std, ce TSRMLS_CC);
@@ -427,7 +441,9 @@ static zend_object_value php_haruoutline_new(zend_class_entry *ce TSRMLS_DC) /* 
 {
 	php_haruoutline *outline;
 	zend_object_value retval;
+#if ZEND_MODULE_API_NO  < 20100409 
 	zval *tmp;
+#endif
 
 	outline = ecalloc(1, sizeof(*outline));
 	zend_object_std_init(&outline->std, ce TSRMLS_CC);
