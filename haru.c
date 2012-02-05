@@ -130,12 +130,12 @@ typedef struct _php_haruoutline {
 #else
 #define HARU_CHECK_FILE(filename)																\
 	do {																						\
-		php_set_error_handling(EH_THROW, ce_haruexception TSRMLS_CC);							\
+		zend_replace_error_handling(EH_THROW, ce_haruexception, NULL TSRMLS_CC);							\
 		if (php_check_open_basedir(filename TSRMLS_CC)) {										\
-			php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);									\
+			zend_replace_error_handling(EH_NORMAL, NULL, NULL TSRMLS_CC);								\
 			return;																				\
 		}																						\
-		php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);										\
+		zend_replace_error_handling(EH_NORMAL, NULL, NULL TSRMLS_CC);									\
 	} while(0)
 #endif
 
