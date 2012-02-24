@@ -33,6 +33,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
    <file name="config.m4" role="src" />
    <file name="config.w32" role="src" />
    <file name="CREDITS" role="doc" />
+   <file name="LICENSE" role="doc" />
    <file name="haru.c" role="src" />
    <file name="haru.php" role="doc" />
    <file name="php_haru.h" role="src" />
