@@ -1814,7 +1814,7 @@ static PHP_METHOD(HaruDoc, createOutline)
 	char *title;
 	int title_len;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|o!o!", &title, &title_len, &parent, ce_haruoutline, &encoder, ce_haruencoder) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|O!O!", &title, &title_len, &parent, ce_haruoutline, &encoder, ce_haruencoder) == FAILURE) {
 		return;
 	}
 
