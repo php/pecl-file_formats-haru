@@ -1,0 +1,19 @@
+// $Id$
+// vim:ft=javascript
+
+ARG_WITH("haru", "Haru PDF support", "no");
+
+if (PHP_HARU != "no") {
+	if (CHECK_LIB("libhpdf.lib", "haru") &&
+			CHECK_LIB("libpng_a.lib", "haru") &&
+			CHECK_LIB("zlib_a.lib", "haru") &&
+			CHECK_HEADER_ADD_INCLUDE("hpdf.h", "CFLAGS_HARU", PHP_HARU + ";" + PHP_PHP_BUILD + "\\include\\libharu")
+		) {
+
+		EXTENSION("haru", "haru.c");
+		AC_DEFINE('HAVE_HARU', 1, "Have haru support");
+	}
+	else {
+		WARNING("haru not enabled; libraries and headers not found");
+	}
+}
