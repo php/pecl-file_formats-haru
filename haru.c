@@ -526,7 +526,7 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 			*msg = estrdup("Tried to register a font that has been registered");
 			break;
 		case HPDF_EXCEED_JWW_CODE_NUM_LIMIT:
-			*msg = estrdup("Cannot register a character to the japanese word wrap characters list");
+			*msg = estrdup("Cannot register a character to the Japanese word wrap characters list");
 			break;
 		case HPDF_ENCRYPT_INVALID_PASSWORD:
 			*msg = estrdup("Tried to set the owner password to NULL or the owner password and user password are the same");
@@ -692,7 +692,7 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 			*msg = estrdup("Unsupported or invalid ttf format (cannot find a necessary table)");
 			break;
 		case HPDF_UNSUPPORTED_FUNC:
-			*msg = estrdup("The library is not configured to use PNGLIB or internal error occured");
+			*msg = estrdup("The library is not configured to use PNGLIB or internal error occurred");
 			break;
 		case HPDF_UNSUPPORTED_JPEG_FORMAT:
 			*msg = estrdup("Unsupported or invalid JPEG format");
@@ -725,7 +725,7 @@ static int php_haru_status_to_errmsg(HPDF_STATUS status, char **msg) /* {{{ */
 			*msg = estrdup("Insufficient space for text");
 			break;
 		default:
-			*msg = estrdup("Unknown error occured, please report");
+			*msg = estrdup("Unknown error occurred, please report");
 			break;
 	}
 	return 1;
@@ -738,7 +738,7 @@ static int php_haru_status_to_exception(HPDF_STATUS status TSRMLS_DC) /* {{{ */
 	if (status != HPDF_OK) {
 		char *msg;
 		php_haru_status_to_errmsg(status, &msg);
-		zend_throw_exception_ex(ce_haruexception, 0 TSRMLS_CC, msg);
+		zend_throw_exception_ex(ce_haruexception, status TSRMLS_CC, msg);
 		efree(msg);
 		return 1;
 	}
