@@ -1949,6 +1949,25 @@ static PHP_METHOD(HaruDoc, useCNTEncodings)
 }
 /* }}} */
 
+/* {{{ proto bool HaruDoc::useUTFEncodings()
+ Enable Unicode encodings */
+static PHP_METHOD(HaruDoc, useUTFEncodings)
+{
+	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_STATUS status;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	status = HPDF_UseUTFEncodings(doc->h);
+
+	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+		return;
+	}
+	RETURN_TRUE;
+}
+
 /* }}} */
 
 /* HaruPage methods {{{ */
@@ -5542,6 +5561,7 @@ static zend_function_entry harudoc_methods[] = { /* {{{ */
 	PHP_ME(HaruDoc, useCNSEncodings, 		arginfo_harudoc___void, 				ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, useCNTFonts, 			arginfo_harudoc___void, 				ZEND_ACC_PUBLIC)
 	PHP_ME(HaruDoc, useCNTEncodings, 		arginfo_harudoc___void, 				ZEND_ACC_PUBLIC)
+	PHP_ME(HaruDoc, useUTFEncodings, 		arginfo_harudoc___void, 				ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
