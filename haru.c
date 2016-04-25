@@ -4678,6 +4678,31 @@ static PHP_METHOD(HaruFont, getCapHeight)
 }
 /* }}} */
 
+/* {{{ proto array HaruFont::getBBox()
+ Gets the size of the font bbox as an associative array */
+static PHP_METHOD(HaruFont, getBBox)
+{
+	php_harufont *font = (php_harufont *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	HPDF_Box bbox;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+		return;
+	}
+
+	bbox = HPDF_Font_GetBBox(font->h);
+
+	if (php_haru_check_error(font->h->error TSRMLS_CC)) {
+		return;
+	}
+
+	array_init(return_value);
+	add_assoc_double_ex(return_value, "left", sizeof("left"), bbox.left);
+        add_assoc_double_ex(return_value, "top", sizeof("top"), bbox.top);
+	add_assoc_double_ex(return_value, "right", sizeof("right"), bbox.right);
+	add_assoc_double_ex(return_value, "bottom", sizeof("bottom"), bbox.bottom);
+}
+/* }}} */
+
 /* {{{ proto array HaruFont::getTextWidth(string text)
  Get the total width of the text, number of characters, number of words and number of spaces */
 static PHP_METHOD(HaruFont, getTextWidth)
@@ -5816,6 +5841,7 @@ static zend_function_entry harufont_methods[] = { /* {{{ */
 	PHP_ME(HaruFont, getDescent, 		arginfo_harudoc___void, 			ZEND_ACC_PUBLIC)
 	PHP_ME(HaruFont, getXHeight, 		arginfo_harudoc___void, 			ZEND_ACC_PUBLIC)
 	PHP_ME(HaruFont, getCapHeight, 		arginfo_harudoc___void, 			ZEND_ACC_PUBLIC)
+	PHP_ME(HaruFont, getBBox, 		arginfo_harudoc___void, 			ZEND_ACC_PUBLIC)
 	PHP_ME(HaruFont, getTextWidth, 		arginfo_harufont_gettextwidth, 		ZEND_ACC_PUBLIC)
 	PHP_ME(HaruFont, MeasureText, 		arginfo_harufont_measuretext, 		ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
