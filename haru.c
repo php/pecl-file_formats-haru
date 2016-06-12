@@ -1950,24 +1950,23 @@ static PHP_METHOD(HaruDoc, useCNTEncodings)
 /* }}} */
 
 /* {{{ proto bool HaruDoc::useUTFEncodings()
- Enable Unicode encodings */
+ Enable Chinese traditional encodings */
 static PHP_METHOD(HaruDoc, useUTFEncodings)
 {
-	php_harudoc *doc = (php_harudoc *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	php_harudoc *doc = haru_doc(getThis());
 	HPDF_STATUS status;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "") == FAILURE) {
 		return;
 	}
 
 	status = HPDF_UseUTFEncodings(doc->h);
 
-	if (php_haru_status_to_exception(status TSRMLS_CC)) {
+	if (php_haru_status_to_exception(status)) {
 		return;
 	}
 	RETURN_TRUE;
 }
-
 /* }}} */
 
 /* HaruPage methods {{{ */
