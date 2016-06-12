@@ -1950,7 +1950,7 @@ static PHP_METHOD(HaruDoc, useCNTEncodings)
 /* }}} */
 
 /* {{{ proto bool HaruDoc::useUTFEncodings()
- Enable Chinese traditional encodings */
+ Enable Unicode encodings */
 static PHP_METHOD(HaruDoc, useUTFEncodings)
 {
 	php_harudoc *doc = haru_doc(getThis());
